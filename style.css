@@ -41,3 +41,42 @@
 .item__wrapper input {
   accent-color: #2196f3;
 }
+
+@media (max-width: 768px) {
+  .formWrapper {
+    position: static;
+    transform: none;
+    width: 95%;
+    max-width: 95%;
+    margin: 20px auto;
+    top: auto;
+    left: auto;
+  }
+
+  .form__fields {
+    max-height: none;
+    height: auto;
+    overflow: visible;
+  }
+
+  .form__title {
+    font-size: 18px;
+  }
+
+  .item__wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .formWrapper {
+    width: 100%;
+    margin: 0 auto;
+    border-radius: 0;
+  }
+
+  .form__title {
+    font-size: 16px;
+  }
+}
