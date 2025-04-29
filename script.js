@@ -5,6 +5,20 @@ const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxem5uYXJwYW5yZnp3empna3NxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1NjU3NDMsImV4cCI6MjA2MTE0MTc0M30.cqB9D02UwuZ7pNpsr-NwtkmLV9W2VJ78X7Fw8QIstbU";
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+document
+  .querySelector(".masterIdPrompt__button")
+  .addEventListener("click", async () => {
+    masterId = Number(document.querySelector(".masterIdPrompt__input").value);
+    document.querySelector(".formWrapper").style.display = "flex";
+    document.querySelector(".masterIdPrompt").style.display = "none";
+
+    await main();
+  });
+
+var masterId;
+var empFieldsIds;
+var fields;
+
 function createInputField(type, name, status, id) {
   const inputWrapper = document.createElement("div");
   inputWrapper.classList.add("input__wrapper");
@@ -21,9 +35,19 @@ function createInputField(type, name, status, id) {
   checkBox.checked = status;
   checkBox.addEventListener("change", async (e) => {
     await supabase
-      .from("Fields")
-      .update({ status: e.target.checked })
-      .eq("id", id)
+      .from("Employees")
+      .update({
+        fields: fields
+          .filter((f) => {
+            if (f.id == id) {
+              return e.target.checked;
+            }
+
+            return empFieldsIds.includes(f.id);
+          })
+          .map((f) => f.id),
+      })
+      .eq("id", masterId)
       .select();
   });
 
@@ -40,8 +64,7 @@ function createInputField(type, name, status, id) {
         initialDate: new Date(),
         selectedDates: [new Date()],
         onDateSelect: (data) => console.log("Selected:", data.selectedDates),
-        width: "300px", // попробуйте уменьшить
-        height: "400px",
+        width: "300px",
         tdPadding: "12px",
       });
 
@@ -57,19 +80,25 @@ function createInputField(type, name, status, id) {
   return inputWrapper;
 }
 
-(async () => {
-  const fields = (await supabase.from("Fields").select("*")).data.sort(
+async function main() {
+  fields = (await supabase.from("Fields").select("*")).data.sort(
     (a, b) => a.id - b.id
   );
+
+  // console.log(await supabase.from("Employees").select("*").eq("id", masterId));
+
+  empFieldsIds = (
+    await supabase.from("Employees").select("*").eq("id", masterId)
+  ).data[0]["fields"];
 
   for (const field of fields) {
     console.log(field.type);
     const inputField = createInputField(
       field.type,
       field.name,
-      field.status,
+      empFieldsIds.includes(field.id),
       field.id
     );
     formWrapper.append(inputField);
   }
-})();
+}
