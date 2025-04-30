@@ -31,25 +31,13 @@ function createInputField(type, name, status, id) {
   itemWrapper.classList.add("item__wrapper");
 
   const checkBox = document.createElement("input");
+  checkBox.classList.add("checkbox");
   checkBox.type = "checkbox";
   checkBox.checked = status;
-  checkBox.addEventListener("change", async (e) => {
-    await supabase
-      .from("Employees")
-      .update({
-        fields: fields
-          .filter((f) => {
-            if (f.id == id) {
-              return e.target.checked;
-            }
+  checkBox.dataset.fieldID = id;
+  // checkBox.addEventListener("change", async (e) => {
 
-            return empFieldsIds.includes(f.id);
-          })
-          .map((f) => f.id),
-      })
-      .eq("id", masterId)
-      .select();
-  });
+  // });
 
   let item = document.createElement("input");
   switch (type) {
@@ -81,6 +69,23 @@ function createInputField(type, name, status, id) {
 }
 
 async function main() {
+  const saveBtn = document.querySelector(".form__button");
+  saveBtn.addEventListener("click", async () => {
+    const checkboxes = document.querySelectorAll(".checkbox");
+
+    await supabase
+      .from("Employees")
+      .update({
+        fields: [...checkboxes]
+          .filter((ch) => ch.checked)
+          .map((ch) => Number(ch.dataset.fieldID)),
+      })
+      .eq("id", masterId)
+      .select();
+
+    saveBtn.textContent = "Успешно!";
+  });
+
   fields = (await supabase.from("Fields").select("*")).data.sort(
     (a, b) => a.id - b.id
   );
